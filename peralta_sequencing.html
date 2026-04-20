@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Freddy Peralta — Pitch Sequencing Analysis 2024</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --surface: #111318;
+    --surface2: #1a1d24;
+    --border: #2a2d35;
+    --accent: #e8ff47;
+    --accent2: #ff4747;
+    --accent3: #47b8ff;
+    --text: #f0f2f5;
+    --text-muted: #6b7080;
+    --text-dim: #9ba3b2;
+    --green: #4dff91;
+    --yellow: #ffd447;
+    --red: #ff4747;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    overflow-x: hidden;
+  }
+
+  /* NOISE TEXTURE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-left {
+    padding: 80px 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+  }
+
+  .hero-right {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  /* Animated radar/spin graphic */
+  .radar-wrap {
+    position: relative;
+    width: 420px;
+    height: 420px;
+  }
+
+  .radar-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    animation: pulse-ring 3s ease-in-out infinite;
+  }
+
+  .radar-ring:nth-child(1) { width: 420px; height: 420px; border-color: rgba(232,255,71,0.08); animation-delay: 0s; }
+  .radar-ring:nth-child(2) { width: 320px; height: 320px; border-color: rgba(232,255,71,0.12); animation-delay: 0.4s; }
+  .radar-ring:nth-child(3) { width: 220px; height: 220px; border-color: rgba(232,255,71,0.18); animation-delay: 0.8s; }
+  .radar-ring:nth-child(4) { width: 120px; height: 120px; border-color: rgba(232,255,71,0.28); animation-delay: 1.2s; }
+
+  @keyframes pulse-ring {
+    0%, 100% { opacity: 0.4; transform: translate(-50%, -50%) scale(1); }
+    50% { opacity: 1; transform: translate(-50%, -50%) scale(1.02); }
+  }
+
+  .radar-sweep {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 210px; height: 2px;
+    transform-origin: left center;
+    background: linear-gradient(90deg, transparent, var(--accent));
+    animation: sweep 4s linear infinite;
+  }
+
+  @keyframes sweep { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+  .radar-center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 16px; height: 16px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 20px var(--accent), 0 0 60px rgba(232,255,71,0.3);
+  }
+
+  /* Pitch dots on radar */
+  .pitch-dot {
+    position: absolute;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    top: 50%; left: 50%;
+    animation: blink 2s ease-in-out infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 0.5; transform: translate(-50%,-50%) scale(1); }
+    50% { opacity: 1; transform: translate(-50%,-50%) scale(1.4); }
+  }
+
+  .tag {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 6px 14px;
+    margin-bottom: 32px;
+    text-transform: uppercase;
+    opacity: 0;
+    animation: fadeUp 0.6s ease forwards 0.2s;
+  }
+
+  .hero-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(72px, 8vw, 110px);
+    line-height: 0.9;
+    letter-spacing: 0.01em;
+    opacity: 0;
+    animation: fadeUp 0.6s ease forwards 0.4s;
+  }
+
+  .hero-name span {
+    display: block;
+    color: var(--accent);
+  }
+
+  .hero-subtitle {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 22px;
+    color: var(--text-dim);
+    margin-top: 20px;
+    opacity: 0;
+    animation: fadeUp 0.6s ease forwards 0.6s;
+  }
+
+  .hero-divider {
+    width: 60px; height: 2px;
+    background: var(--accent);
+    margin: 32px 0;
+    opacity: 0;
+    animation: fadeUp 0.6s ease forwards 0.7s;
+  }
+
+  .hero-desc {
+    font-size: 13px;
+    line-height: 1.8;
+    color: var(--text-dim);
+    max-width: 440px;
+    opacity: 0;
+    animation: fadeUp 0.6s ease forwards 0.8s;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* STAT STRIP */
+  .stat-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .stat-item {
+    padding: 40px 40px;
+    border-right: 1px solid var(--border);
+    opacity: 0;
+    animation: fadeUp 0.5s ease forwards;
+  }
+
+  .stat-item:nth-child(1) { animation-delay: 0.1s; }
+  .stat-item:nth-child(2) { animation-delay: 0.2s; }
+  .stat-item:nth-child(3) { animation-delay: 0.3s; }
+  .stat-item:nth-child(4) { animation-delay: 0.4s; border-right: none; }
+
+  .stat-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+
+  .stat-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    line-height: 1;
+    color: var(--accent);
+  }
+
+  .stat-unit {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 6px;
+  }
+
+  /* SECTIONS */
+  .section {
+    padding: 100px 80px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(42px, 5vw, 64px);
+    line-height: 1;
+    margin-bottom: 16px;
+  }
+
+  .section-intro {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 18px;
+    color: var(--text-dim);
+    max-width: 600px;
+    line-height: 1.7;
+    margin-bottom: 60px;
+  }
+
+  /* ARSENAL GRID */
+  .arsenal-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    margin-bottom: 2px;
+  }
+
+  .pitch-card {
+    background: var(--surface);
+    padding: 32px 28px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s ease;
+    cursor: default;
+  }
+
+  .pitch-card::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--card-color, var(--accent));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s ease;
+  }
+
+  .pitch-card:hover::before { transform: scaleX(1); }
+  .pitch-card:hover { background: var(--surface2); }
+
+  .pitch-card-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    margin-bottom: 4px;
+    color: var(--card-color, var(--text));
+  }
+
+  .pitch-card-pct {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    margin-bottom: 24px;
+  }
+
+  .pitch-bar-bg {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-bottom: 20px;
+  }
+
+  .pitch-bar-fill {
+    height: 4px;
+    border-radius: 2px;
+    background: var(--card-color, var(--accent));
+    transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 0;
+  }
+
+  .pitch-stats {
+    display: flex;
+    gap: 20px;
+  }
+
+  .pitch-stat-mini {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .pitch-stat-mini-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: var(--text);
+  }
+
+  .pitch-stat-mini-label {
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  /* HEATMAP */
+  .heatmap-section {
+    background: var(--surface);
+    padding: 80px;
+  }
+
+  .heatmap-container {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .heatmap-grid {
+    display: grid;
+    gap: 3px;
+    margin-top: 48px;
+  }
+
+  .heatmap-row {
+    display: grid;
+    gap: 3px;
+    align-items: center;
+  }
+
+  .heatmap-cell {
+    aspect-ratio: 1.4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: transform 0.2s ease, z-index 0s;
+    cursor: pointer;
+  }
+
+  .heatmap-cell:hover {
+    transform: scale(1.06);
+    z-index: 10;
+  }
+
+  .heatmap-cell.empty {
+    background: rgba(255,255,255,0.02);
+    border: 1px dashed var(--border);
+  }
+
+  .cell-rate {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    line-height: 1;
+  }
+
+  .cell-label {
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.7;
+    margin-top: 4px;
+  }
+
+  .cell-whiff {
+    font-size: 10px;
+    margin-top: 6px;
+    opacity: 0.8;
+    font-style: italic;
+  }
+
+  .axis-label {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 8px 4px;
+  }
+
+  .axis-label-row {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 0 16px 0 4px;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .heatmap-legend {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 32px;
+    justify-content: flex-end;
+  }
+
+  .legend-bar {
+    width: 200px; height: 8px;
+    background: linear-gradient(90deg, #ff4747, #ff9447, #ffd447, #a8e063, #4dff91);
+    border-radius: 4px;
+  }
+
+  .legend-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+  }
+
+  /* SEQUENCES */
+  .sequences-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+  }
+
+  .seq-card {
+    background: var(--surface);
+    padding: 36px;
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.5s ease, transform 0.5s ease, background 0.3s ease;
+  }
+
+  .seq-card.visible { opacity: 1; transform: translateY(0); }
+  .seq-card:hover { background: var(--surface2); }
+
+  .seq-type {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .seq-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+  }
+
+  .seq-flow {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .seq-pitch {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    padding: 8px 20px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+  }
+
+  .seq-arrow {
+    font-size: 20px;
+    color: var(--text-muted);
+  }
+
+  .seq-metrics {
+    display: flex;
+    gap: 32px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  .seq-metric {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .seq-metric-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+  }
+
+  .seq-metric-label {
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .seq-desc {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--text-dim);
+    line-height: 1.6;
+    margin-top: 16px;
+  }
+
+  /* METHODOLOGY */
+  .method-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    margin-top: 48px;
+  }
+
+  .method-card {
+    background: var(--surface);
+    padding: 40px 36px;
+  }
+
+  .method-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 72px;
+    color: var(--border);
+    line-height: 1;
+    margin-bottom: 16px;
+  }
+
+  .method-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    margin-bottom: 12px;
+    color: var(--accent);
+  }
+
+  .method-desc {
+    font-size: 12px;
+    line-height: 1.8;
+    color: var(--text-dim);
+  }
+
+  /* SCOUTING REPORT */
+  .scout-section {
+    background: var(--surface);
+    padding: 80px;
+  }
+
+  .scout-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: start;
+  }
+
+  .scout-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+
+  .scout-header-icon {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+
+  .scout-header-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+  }
+
+  .scout-item {
+    border-left: 2px solid var(--border);
+    padding: 0 0 28px 24px;
+    position: relative;
+  }
+
+  .scout-item::before {
+    content: '';
+    position: absolute;
+    left: -5px; top: 6px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .scout-item-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    margin-bottom: 8px;
+  }
+
+  .scout-item-desc {
+    font-size: 12px;
+    line-height: 1.8;
+    color: var(--text-dim);
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 80px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--surface);
+  }
+
+  .footer-brand {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.05em;
+  }
+
+  .footer-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+  }
+
+  /* TOOLTIPS */
+  .tooltip {
+    position: fixed;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 14px 18px;
+    pointer-events: none;
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    min-width: 180px;
+  }
+
+  .tooltip.show { opacity: 1; }
+
+  .tooltip-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    margin-bottom: 6px;
+  }
+
+  .tooltip-line {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-bottom: 3px;
+  }
+
+  /* DIVIDER */
+  .full-divider {
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Scroll animations */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- TOOLTIP -->
+<div class="tooltip" id="tooltip">
+  <div class="tooltip-title" id="tt-title"></div>
+  <div class="tooltip-line" id="tt-rate"></div>
+  <div class="tooltip-line" id="tt-whiff"></div>
+  <div class="tooltip-line" id="tt-count"></div>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="tag">⚾ Pitch Sequencing Analysis · 2024 MLB Season</div>
+    <h1 class="hero-name">
+      FREDDY<br>
+      <span>PERALTA</span>
+    </h1>
+    <p class="hero-subtitle">Milwaukee Brewers · Starting Pitcher</p>
+    <div class="hero-divider"></div>
+    <p class="hero-desc">
+      A machine learning analysis of pitch sequencing effectiveness using 2024 MLB Statcast data. 
+      This model identifies which pitch sequences maximize whiff rate and weak contact, 
+      revealing how Peralta's four-pitch arsenal creates elite swing-and-miss potential.
+    </p>
+  </div>
+  <div class="hero-right">
+    <div class="radar-wrap">
+      <div class="radar-ring"></div>
+      <div class="radar-ring"></div>
+      <div class="radar-ring"></div>
+      <div class="radar-ring"></div>
+      <div class="radar-sweep"></div>
+      <!-- pitch dots -->
+      <div class="pitch-dot" style="--card-color:#e8ff47; background:#e8ff47; margin-left:80px; margin-top:-120px; animation-delay:0s;"></div>
+      <div class="pitch-dot" style="background:#47b8ff; margin-left:-100px; margin-top:60px; animation-delay:0.5s;"></div>
+      <div class="pitch-dot" style="background:#ff4747; margin-left:60px; margin-top:100px; animation-delay:1s;"></div>
+      <div class="pitch-dot" style="background:#4dff91; margin-left:-70px; margin-top:-90px; animation-delay:1.5s;"></div>
+      <div class="radar-center"></div>
+    </div>
+  </div>
+</section>
+
+<!-- STAT STRIP -->
+<div class="stat-strip">
+  <div class="stat-item">
+    <div class="stat-label">Total Pitches Analyzed</div>
+    <div class="stat-value">3,065</div>
+    <div class="stat-unit">2024 MLB Season</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-label">Whiff Rate</div>
+    <div class="stat-value">12.8%</div>
+    <div class="stat-unit">+2.2% above league avg</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-label">Good Outcome Rate</div>
+    <div class="stat-value">31.2%</div>
+    <div class="stat-unit">Whiff or weak contact</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-label">Primary Weapon</div>
+    <div class="stat-value">4S-FB</div>
+    <div class="stat-unit">53.8% pitch usage</div>
+  </div>
+</div>
+
+<!-- ARSENAL -->
+<section class="section">
+  <div class="section-label">01 — Arsenal Breakdown</div>
+  <h2 class="section-title reveal">THE WEAPONS</h2>
+  <p class="section-intro reveal">Peralta operates with a four-pitch mix anchored by one of baseball's most spin-efficient four-seam fastballs. Each pitch serves a distinct role in his sequencing strategy.</p>
+
+  <div class="arsenal-grid reveal">
+    <div class="pitch-card" style="--card-color: #e8ff47;">
+      <div class="pitch-card-name">4-Seam Fastball</div>
+      <div class="pitch-card-pct">53.8% usage · 1,650 pitches</div>
+      <div class="pitch-bar-bg"><div class="pitch-bar-fill" data-width="53.8" style="background:#e8ff47;"></div></div>
+      <div class="pitch-stats">
+        <div class="pitch-stat-mini">
+          <div class="pitch-stat-mini-val">12.0%</div>
+          <div class="pitch-stat-mini-label">Whiff Rate</div>
+        </div>
+        <div class="pitch-stat-mini">
+          <div class="pitch-stat-mini-val">32.0%</div>
+          <div class="pitch-stat-mini-label">Good Out%</div>
+        </div>
+      </div>
+    </div>
+    <div class="pitch-card" style="--card-color: #47b8ff;">
+      <div class="pitch-card-name">Slider</div>
+      <div class="pitch-card-pct">20.8% usage · 638 pitches</div>
+      <div class="pitch-bar-bg"><div class="pitch-bar-fill" data-width="20.8" style="background:#47b8ff;"></div></div>
+      <div class="pitch-stats">
+        <div class="pitch-stat-mini">
+          <div class="pitch-stat-mini-val">17.6%</div>
+          <div class="pitch-stat-mini-label">Whiff Rate</div>
+        </div>
+        <div class="pitch-stat-mini">
+          <div class="pitch-stat-mini-val">31.8%</div>
+          <div class="pitch-stat-mini-label">Good Out%</div>
+        </div>
+      </div>
+    </div>
+    <div class="pitch-card" style="--card-color: #ff9447;">
+      <div class="pitch-card-name">Changeup</div>
+      <div class="pitch-card-pct">17.5% usage · 536 pitches</div>
+      <div class="pitch-bar-bg"><div class="pitch-bar-fill" data-width="17.5" style="background:#ff9447;"></div></div>
+      <div class="pitch-stats">
+        <div class="pitch-stat-mini">
+          <div class="pitch-stat-mini-val">17.3%</div>
+          <div class="pitch-stat-mini-label">Whiff Rate</div>
+        </div>
+        <div class="pitch-stat-mini">
+          <div class="pitch-stat-mini-val">30.7%</div>
+          <div class="pitch-stat-mini-label">Good Out%</div>
+        </div>
+      </div>
+    </div>
+    <div class="pitch-card" style="--card-color: #4dff91;">
+      <div class="pitch-card-name">Curveball</div>
+      <div class="pitch-card-pct">7.3% usage · 224 pitches</div>
+      <div class="pitch-bar-bg"><div class="pitch-bar-fill" data-width="7.3" style="background:#4dff91;"></div></div>
+      <div class="pitch-stats">
+        <div class="pitch-stat-mini">
+          <div class="pitch-stat-mini-val">16.7%</div>
+          <div class="pitch-stat-mini-label">Whiff Rate</div>
+        </div>
+        <div class="pitch-stat-mini">
+          <div class="pitch-stat-mini-val">30.6%</div>
+          <div class="pitch-stat-mini-label">Good Out%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="full-divider"></div>
+
+<!-- HEATMAP -->
+<section class="heatmap-section">
+  <div class="heatmap-container">
+    <div class="section-label">02 — Sequencing Matrix</div>
+    <h2 class="section-title reveal">PITCH SEQUENCING HEATMAP</h2>
+    <p class="section-intro reveal">Good outcome rate (%) by previous pitch → current pitch combination. Darker green indicates higher effectiveness. Hover any cell for detailed metrics. Minimum 15-pitch sample required.</p>
+
+    <!-- Heatmap built with JS below -->
+    <div id="heatmap-wrap"></div>
+
+    <div class="heatmap-legend">
+      <span class="legend-label">10%</span>
+      <div class="legend-bar"></div>
+      <span class="legend-label">55%</span>
+      <span class="legend-label" style="margin-left:16px; color: var(--text-muted);">Good Outcome Rate</span>
+    </div>
+  </div>
+</section>
+
+<div class="full-divider"></div>
+
+<!-- KEY SEQUENCES -->
+<section class="section">
+  <div class="section-label">03 — Key Sequences</div>
+  <h2 class="section-title reveal">BEST & WORST SEQUENCES</h2>
+  <p class="section-intro reveal">The sequences that define Peralta's effectiveness — and the ones opponents can exploit.</p>
+
+  <div class="sequences-grid">
+    <!-- BEST -->
+    <div class="seq-card">
+      <div class="seq-type" style="color: var(--green);">
+        <div class="seq-dot" style="background: var(--green);"></div>
+        Most Effective Sequence
+      </div>
+      <div class="seq-flow">
+        <div class="seq-pitch" style="border-color: #47b8ff; color: #47b8ff;">Slider</div>
+        <div class="seq-arrow">→</div>
+        <div class="seq-pitch" style="border-color: #ff9447; color: #ff9447;">Changeup</div>
+      </div>
+      <div class="seq-metrics">
+        <div class="seq-metric">
+          <div class="seq-metric-val" style="color: var(--green);">35.5%</div>
+          <div class="seq-metric-label">Good Outcome</div>
+        </div>
+        <div class="seq-metric">
+          <div class="seq-metric-val" style="color: var(--green);">23.4%</div>
+          <div class="seq-metric-label">Whiff Rate</div>
+        </div>
+        <div class="seq-metric">
+          <div class="seq-metric-val">107</div>
+          <div class="seq-metric-label">Sample Size</div>
+        </div>
+      </div>
+      <p class="seq-desc">The slider breaks glove-side while the changeup drops below the zone arm-side. Hitters who chase the slider are completely unprepared for the velocity change and downward action of the changeup — Peralta's most dangerous two-pitch combination.</p>
+    </div>
+
+    <div class="seq-card">
+      <div class="seq-type" style="color: var(--green);">
+        <div class="seq-dot" style="background: var(--green);"></div>
+        Fastball Repeat Effectiveness
+      </div>
+      <div class="seq-flow">
+        <div class="seq-pitch" style="border-color: #e8ff47; color: #e8ff47;">4-Seam FB</div>
+        <div class="seq-arrow">→</div>
+        <div class="seq-pitch" style="border-color: #e8ff47; color: #e8ff47;">4-Seam FB</div>
+      </div>
+      <div class="seq-metrics">
+        <div class="seq-metric">
+          <div class="seq-metric-val" style="color: var(--yellow);">32.0%</div>
+          <div class="seq-metric-label">Good Outcome</div>
+        </div>
+        <div class="seq-metric">
+          <div class="seq-metric-val" style="color: var(--yellow);">12.0%</div>
+          <div class="seq-metric-label">Whiff Rate</div>
+        </div>
+        <div class="seq-metric">
+          <div class="seq-metric-val">895</div>
+          <div class="seq-metric-label">Sample Size</div>
+        </div>
+      </div>
+      <p class="seq-desc">Unlike most pitchers, Peralta can repeat his fastball effectively due to elite spin rate and rising action. With 895 pitches in this sequence, it's his most used combination — and hitters still can't catch up.</p>
+    </div>
+
+    <!-- WORST -->
+    <div class="seq-card">
+      <div class="seq-type" style="color: var(--red);">
+        <div class="seq-dot" style="background: var(--red);"></div>
+        Least Effective Sequence
+      </div>
+      <div class="seq-flow">
+        <div class="seq-pitch" style="border-color: #47b8ff; color: #47b8ff;">Slider</div>
+        <div class="seq-arrow">→</div>
+        <div class="seq-pitch" style="border-color: #4dff91; color: #4dff91;">Curveball</div>
+      </div>
+      <div class="seq-metrics">
+        <div class="seq-metric">
+          <div class="seq-metric-val" style="color: var(--red);">17.9%</div>
+          <div class="seq-metric-label">Good Outcome</div>
+        </div>
+        <div class="seq-metric">
+          <div class="seq-metric-val" style="color: var(--red);">10.3%</div>
+          <div class="seq-metric-label">Whiff Rate</div>
+        </div>
+        <div class="seq-metric">
+          <div class="seq-metric-val">39</div>
+          <div class="seq-metric-label">Sample Size</div>
+        </div>
+      </div>
+      <p class="seq-desc">Back-to-back breaking balls leave hitters in a comfortable mindset. After seeing the lateral break of the slider, hitters recognize the downward curveball trajectory early and adjust. Peralta should avoid this sequence, especially with two strikes.</p>
+    </div>
+
+    <div class="seq-card">
+      <div class="seq-type" style="color: var(--accent3);">
+        <div class="seq-dot" style="background: var(--accent3);"></div>
+        Most Versatile Setup Pitch
+      </div>
+      <div class="seq-flow">
+        <div class="seq-pitch" style="border-color: #4dff91; color: #4dff91;">Curveball</div>
+        <div class="seq-arrow">→</div>
+        <div class="seq-pitch" style="border-color: #e8ff47; color: #e8ff47;">4-Seam FB</div>
+      </div>
+      <div class="seq-metrics">
+        <div class="seq-metric">
+          <div class="seq-metric-val" style="color: var(--accent3);">33.9%</div>
+          <div class="seq-metric-label">Good Outcome</div>
+        </div>
+        <div class="seq-metric">
+          <div class="seq-metric-val" style="color: var(--accent3);">11.3%</div>
+          <div class="seq-metric-label">Whiff Rate</div>
+        </div>
+        <div class="seq-metric">
+          <div class="seq-metric-val">124</div>
+          <div class="seq-metric-label">Sample Size</div>
+        </div>
+      </div>
+      <p class="seq-desc">The curveball is Peralta's most effective setup pitch for the fastball. After dropping eyes down in the zone with the curve, the rising four-seamer above the zone becomes nearly impossible to lay off — a classic eye-level manipulation sequence.</p>
+    </div>
+  </div>
+</section>
+
+<div class="full-divider"></div>
+
+<!-- SCOUTING REPORT -->
+<section class="scout-section">
+  <div class="scout-container">
+    <div>
+      <div class="section-label">04 — Scouting Report</div>
+      <h2 class="section-title reveal">HOW TO ATTACK</h2>
+      <p class="section-intro reveal" style="margin-bottom: 0;">Data-driven recommendations for opposing hitters and advance scouts preparing against Peralta.</p>
+    </div>
+    <div>
+      <div class="scout-header">
+        <div class="scout-header-icon" style="background: rgba(255,71,71,0.15); color: var(--red);">⚔</div>
+        <div class="scout-header-title" style="color: var(--red);">Exploitable Tendencies</div>
+      </div>
+      <div class="scout-item">
+        <div class="scout-item-title">Sit on the Slider → Curveball Pattern</div>
+        <div class="scout-item-desc">When Peralta throws back-to-back breaking balls, hitters have his worst sequence at 17.9% good outcome rate. Look for the slider first, then expect the curveball and drive it.</div>
+      </div>
+      <div class="scout-item">
+        <div class="scout-item-title">Attack After the Changeup</div>
+        <div class="scout-item-desc">Pitches following the changeup show his lowest good outcome rates across the board. The changeup → fastball (32.3%) and changeup → slider (30.2%) are hittable when you know they're coming.</div>
+      </div>
+      <div class="scout-item">
+        <div class="scout-item-title">Take the First Pitch</div>
+        <div class="scout-item-desc">With a 53.8% fastball usage rate, Peralta establishes the heater early. Working deep into counts forces him to use his secondary stuff — where hitters have more success.</div>
+      </div>
+
+      <div class="scout-header" style="margin-top: 40px;">
+        <div class="scout-header-icon" style="background: rgba(232,255,71,0.15); color: var(--accent);">🛡</div>
+        <div class="scout-header-title" style="color: var(--accent);">Pitcher Strengths</div>
+      </div>
+      <div class="scout-item">
+        <div class="scout-item-title">Slider → Changeup is Untouchable</div>
+        <div class="scout-item-desc">His best sequence generates a 23.4% whiff rate — nearly double his overall rate. Hitters must respect both directions of break simultaneously, which is nearly impossible.</div>
+      </div>
+      <div class="scout-item">
+        <div class="scout-item-title">Curveball Sets Up Everything</div>
+        <div class="scout-item-desc">The curveball is the most effective setup pitch in his arsenal. After showing it, every subsequent pitch — especially the fastball — plays up significantly due to eye-level disruption.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="full-divider"></div>
+
+<!-- METHODOLOGY -->
+<section class="section">
+  <div class="section-label">05 — Methodology</div>
+  <h2 class="section-title reveal">HOW THIS WAS BUILT</h2>
+  <p class="section-intro reveal">A transparent look at the data pipeline and modeling approach behind this analysis.</p>
+
+  <div class="method-grid reveal">
+    <div class="method-card">
+      <div class="method-num">01</div>
+      <div class="method-title">Data Collection</div>
+      <div class="method-desc">2024 MLB Statcast data pulled via the pybaseball Python library — 731,904 total pitches across the full season. Filtered to 9 primary pitch types with meaningful sample sizes, yielding 715,429 clean pitches.</div>
+    </div>
+    <div class="method-card">
+      <div class="method-num">02</div>
+      <div class="method-title">Feature Engineering</div>
+      <div class="method-desc">A "previous pitch" feature was engineered by shifting pitch sequences within each pitcher's outing. Good outcomes defined as whiffs (swinging strike) or weak contact (exit velocity &lt;85 mph). Class imbalance corrected via balanced class weights.</div>
+    </div>
+    <div class="method-card">
+      <div class="method-num">03</div>
+      <div class="method-title">Model Training</div>
+      <div class="method-desc">Random Forest classifier trained on 8 features: count (balls/strikes), outs, inning, previous pitch, pitch thrown, and batter handedness. Feature importance analysis confirmed previous pitch as the #2 predictor of good outcomes league-wide.</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">Pitch Sequencing Analysis</div>
+  <div class="footer-meta">Data: MLB Statcast via pybaseball · Season: 2024 · Model: Random Forest Classifier · Min. Sample: 15 pitches per sequence</div>
+</footer>
+
+<script>
+// ── HEATMAP DATA ──────────────────────────────────────────────────────────────
+const pitches = ['4-Seam Fastball','Changeup','Curveball','Slider'];
+const data = {
+  '4-Seam Fastball': { '4-Seam Fastball': {rate:32.0,whiff:12.0,n:895}, 'Changeup': {rate:31.4,whiff:12.4,n:274}, 'Curveball': {rate:25.8,whiff:12.5,n:128}, 'Slider': {rate:30.6,whiff:14.3,n:343} },
+  'Changeup':        { '4-Seam Fastball': {rate:32.3,whiff:7.5,n:279},  'Changeup': {rate:30.7,whiff:17.3,n:127}, 'Curveball': {rate:26.3,whiff:0.0,n:19},  'Slider': {rate:30.2,whiff:20.8,n:106} },
+  'Curveball':       { '4-Seam Fastball': {rate:33.9,whiff:11.3,n:124}, 'Changeup': {rate:33.3,whiff:11.1,n:27},  'Curveball': {rate:30.6,whiff:16.7,n:36},  'Slider': {rate:27.8,whiff:19.4,n:36} },
+  'Slider':          { '4-Seam Fastball': {rate:30.9,whiff:9.0,n:343},  'Changeup': {rate:35.5,whiff:23.4,n:107}, 'Curveball': {rate:17.9,whiff:10.3,n:39},  'Slider': {rate:31.8,whiff:17.6,n:148} },
+};
+
+function rateToColor(rate) {
+  const min = 10, max = 36;
+  const t = Math.max(0, Math.min(1, (rate - min) / (max - min)));
+  // red → orange → yellow → light green → green
+  const stops = [
+    [255,71,71], [255,148,71], [255,212,71], [168,224,99], [77,255,145]
+  ];
+  const seg = t * (stops.length - 1);
+  const i = Math.min(Math.floor(seg), stops.length - 2);
+  const f = seg - i;
+  const c = stops[i].map((v,j) => Math.round(v + f * (stops[i+1][j] - v)));
+  return `rgb(${c[0]},${c[1]},${c[2]})`;
+}
+
+function buildHeatmap() {
+  const cols = pitches.length + 1;
+  const wrap = document.getElementById('heatmap-wrap');
+
+  let html = `<div class="heatmap-grid" style="grid-template-columns: 140px repeat(${pitches.length}, 1fr);">`;
+
+  // Header row
+  html += `<div></div>`;
+  pitches.forEach(p => {
+    const short = p.replace('4-Seam Fastball','4-Seam FB').replace('Curveball','Curveball').replace('Changeup','Changeup').replace('Slider','Slider');
+    html += `<div class="axis-label" style="font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-muted); padding:8px 4px; text-align:center;">${short}</div>`;
+  });
+
+  // Data rows
+  pitches.forEach(prev => {
+    const shortPrev = prev.replace('4-Seam Fastball','4-Seam FB');
+    html += `<div class="axis-label-row">${shortPrev}</div>`;
+    pitches.forEach(curr => {
+      const d = data[prev] && data[prev][curr];
+      if (d) {
+        const col = rateToColor(d.rate);
+        const textCol = d.rate > 28 ? '#0a0c0f' : '#f0f2f5';
+        html += `
+          <div class="heatmap-cell"
+               style="background:${col};"
+               data-prev="${prev}" data-curr="${curr}"
+               data-rate="${d.rate}" data-whiff="${d.whiff}" data-n="${d.n}"
+               onmouseenter="showTip(event,this)" onmouseleave="hideTip()">
+            <div class="cell-rate" style="color:${textCol};">${d.rate}%</div>
+            <div class="cell-label" style="color:${textCol}; opacity:0.7;">good out</div>
+            <div class="cell-whiff" style="color:${textCol}; opacity:0.75;">${d.whiff}% whiff</div>
+          </div>`;
+      } else {
+        html += `<div class="heatmap-cell empty"></div>`;
+      }
+    });
+  });
+
+  html += `</div>`;
+  wrap.innerHTML = html;
+}
+
+const tooltip = document.getElementById('tooltip');
+function showTip(e, el) {
+  document.getElementById('tt-title').textContent = `${el.dataset.prev} → ${el.dataset.curr}`;
+  document.getElementById('tt-rate').textContent = `Good Outcome Rate: ${el.dataset.rate}%`;
+  document.getElementById('tt-whiff').textContent = `Whiff Rate: ${el.dataset.whiff}%`;
+  document.getElementById('tt-count').textContent = `Sample: ${el.dataset.n} pitches`;
+  tooltip.classList.add('show');
+  moveTip(e);
+}
+function hideTip() { tooltip.classList.remove('show'); }
+document.addEventListener('mousemove', e => { if(tooltip.classList.contains('show')) moveTip(e); });
+function moveTip(e) {
+  tooltip.style.left = (e.clientX + 16) + 'px';
+  tooltip.style.top  = (e.clientY - 10) + 'px';
+}
+
+// ── ANIMATIONS ────────────────────────────────────────────────────────────────
+function animateBars() {
+  document.querySelectorAll('.pitch-bar-fill').forEach(bar => {
+    setTimeout(() => { bar.style.width = bar.dataset.width + '%'; }, 400);
+  });
+}
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.15 });
+
+document.querySelectorAll('.reveal, .seq-card').forEach(el => observer.observe(el));
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+buildHeatmap();
+animateBars();
+</script>
+</body>
+</html>
